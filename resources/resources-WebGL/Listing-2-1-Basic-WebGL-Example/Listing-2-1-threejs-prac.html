@@ -12,7 +12,7 @@
   var gl, keys = 'webgl,experimental-webgl,webkit-3d,moz-webgl'.split(','), i = keys.length
   var cvs = document.getElementById('glCanvas')
 
-  while (i--) if (gl = cvs.getContext(keys[i])) break
+  while (i--) if (gl = cvs.getcontext(keys[i])) break
   if (gl) console.log('webgl 초기화 성공!')
   else console.log('webgl 초기화 실패!');
 

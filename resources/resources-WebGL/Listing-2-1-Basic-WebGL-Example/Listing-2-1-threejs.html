@@ -19,8 +19,8 @@
 
       // 반시계 방향으로 좌표값을 매겨야한다 by kingsae1
       var geo = new THREE.Geometry();
-      var vec1 = new THREE.Vector3(-30,-30,0);
-      var vec2 = new THREE.Vector3(30,-30,0);
+      var vec2 = new THREE.Vector3(-30,-30,0);
+      var vec1 = new THREE.Vector3(30,-30,0);
       var vec3 = new THREE.Vector3(0,30,0);
 
       //  ThreeJS 58버전 이상부터는 아래와 같은 형태로 사용해야한
@@ -28,12 +28,12 @@
       geo.vertices.push( vec2 );
       geo.vertices.push( vec3 );
 
-      geo.faces.push( new THREE.Face3(0,1,2));
+      geo.faces.push( new THREE.Face3(1,0,2));
       geo.computeFaceNormals();
 
       var mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
-        color:0x80802F
-      }))
+        color:0x80802f
+      }));
 
       scene.add(mesh);
 

@@ -1,4 +1,2 @@
-This Folder is for practice.
-- example codes
-- exercise codes
-
+삼각형 1개
+정육면체 2개
