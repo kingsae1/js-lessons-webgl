@@ -1,0 +1,27 @@
+<!DOCTYPE HTML> 
+<html lang="en"> 
+<head>
+<title>Listing 2-1, A First WebGL Example with ThreeJS</title>
+<meta charset="utf-8">
+  <script type="application/javascript" src="../three.min.js"></script>
+</head>
+
+<body>
+<canvas id="glCanvas"></canvas>
+<script>
+  var gl, keys = 'webgl,experimental-webgl,webkit-3d,moz-webgl'.split(','), i = keys.length
+  var cvs = document.getElementById('glCanvas')
+
+  while (i--) if (gl = cvs.getContext(keys[i])) break
+  if (gl) console.log('webgl 초기화 성공!')
+  else console.log('webgl 초기화 실패!');
+
+  function render(){
+    gl.clearColor(Math.random(),Math.random(),Math.random(), 1)
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+  }
+  var renderInterval = setInterval(render,40)
+</script>
+</body>
+
+</html>
