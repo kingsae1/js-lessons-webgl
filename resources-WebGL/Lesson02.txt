@@ -1,0 +1,112 @@
+제작: 박시완 kingsae1
+
+------------------------------------------------------------------
+1. 삼각형 그리기
+------------------------------------------------------------------
+1.1 canvas 생성 context 생성
+1.2 버텍스, 프레그먼트 세이더 코드 생성
+1.3 세이더를 관리하는 WebGL 코드 생성
+    코드를 로드한 후 객체를 컴파일 한다.
+1.4 프로그램 객체를 만들고 컴파일된 세이더 객체를 붙임
+    프로그램 객체를 링크해 자바스크립트에서 객체 이용
+1.5 버퍼를 만들고 도형을 담고 있는 버텍스 데이터를 버퍼에 로드
+1.6 세이더의 어트리뷰트값을 버퍼에 연결하고 도형을 화면에 그림
+
+------------------------------------------------------------------
+2. 상세 코드
+------------------------------------------------------------------
+2.1 버텍스, 프레그먼트 세이더 코드 생성
+    var vertexShaderSource =
+        "attribute vec3 aVertexPosition;                 \n" + // 삼각형을 그리는데 필요한 버텍스 좌표정보 (에트리뷰트)
+        "void main() {                                   \n" +
+        "  gl_Position = vec4(aVertexPosition, 1.0);     \n" + // vec4 동차 좌표계 3차원 + 1차원 (1.0)
+        "}
+
+    vec3 3개의 원소로 구성된 벡터
+    aVertextPosition
+    gl_Position 모든 버텍스 세이더는 반드시 값을 미리 정의된 변수에 할당
+
+    var fragmentShaderSource =
+     "precision mediump float;                    \n"+ // 정밀도
+     "void main() {                               \n"+
+     "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);  \n"+ //(백색) 컬러값 기록
+     "}                                           \n";
+
+2.2 세이더 컴파일
+    세이더를 관리하는 WebGL 코드 생성
+    코드를 로드한 후 객체를 컴파일 한다.
+
+    function loadShader(type, shaderSource) {
+      var shader = gl.createShader(type); // 타입에 따른 세이더 생성
+      gl.shaderSource(shader, shaderSource); // 세이더 코드가 세이더 객체에 로드ㄹㄹㄹ
+      gl.compileShader(shader); // 세이더 컴파일
+
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          alert("Error compiling shader" + gl.getShaderInfoLog(shader));
+          gl.deleteShader(shader);
+          return null;
+      }
+      return shader;  //자바스크립트에서 사용할수 있는 객체를 리턴
+    }
+
+2.3 프로그램 생성
+    프로그램 객체를 만들고 컴파일된 세이더 객체를 붙임
+    프로그램 객체를 링크해 자바스크립트에서 객체 이용
+
+    // 프로그램 객체 생성
+    shaderProgram = gl.createProgram();
+
+    // 프로그램 객체에 각각의 셰이더를 붙인다
+    gl.attachShader(shaderProgram, vertexShader);
+    gl.attachShader(shaderProgram, fragmentShader);
+
+    // 프로그램 객체를 링크한다.
+    gl.linkProgram(shaderProgram);
+
+    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+       alert("Failed to setup shaders");
+    }
+
+    // 웹지엘로 하여금 렌더링에 프로그램 객체를 사용한다
+    gl.useProgram(shaderProgram);
+
+    // 여기까지가 링크
+
+    // 해당 과정을 통해서 버퍼의 버텍스 데이터를 버텍스 세이더의 에트리뷰트와 일치
+    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+
+2.4 버퍼 설정
+    버퍼를 만들고 도형을 담고 있는 버텍스 데이터를 버퍼에 로드
+
+    function setupBuffers() {
+      // 웹지엘 버퍼를 만들고 도형 정보를 담고 있는 버텍스 데이터를 버퍼에 로드한다
+      vertexBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      var triangleVertices = [
+             0.0,  0.5,  0.0,
+            -0.5, -0.5,  0.0,
+             0.5, -0.5,  0.0
+      ];
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleVertices), gl.STATIC_DRAW);
+      vertexBuffer.itemSize = 3;
+      vertexBuffer.numberOfItems = 3;
+    }
+
+2.5 장면 그리기
+    function draw() {
+      // 뷰포트는 그리기 버퍼안에 그려지는 렌더링 결과의 위치
+      gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+      // 실제 openGL에서는 삭제된 API, clear로 생상버퍼를 채운다
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, // 바인딩된 webGL버퍼 , (x,y,z) 원소, 버텍스 버퍼 객체 ,
+                             vertexBuffer.itemSize, gl.FLOAT, false, 0, 0); // 정규화 플래그 , stride (0: 메모리 연속적 저장) , 버퍼오프셋
+
+      gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+      gl.drawArrays(gl.TRIANGLES, 0, vertexBuffer.numberOfItems);
+    }
+
+
+2.6 코드 스타일
+    접두사 a = attribute, v = varying, u = uniform
