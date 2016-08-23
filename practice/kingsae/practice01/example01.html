@@ -1,0 +1,129 @@
+<!DOCTYPE HTML> 
+<html lang="en"> 
+<head>
+<title>Listing 2-1, A First WebGL Example</title>
+<meta charset="utf-8"> 
+<script type="text/javascript">
+var gl;
+var canvas;
+var shaderProgram;
+var vertexBuffer;
+
+function createGLContext(canvas) {
+  // Experimental-WebGL :  임시 규격
+  var names = ["webgl", "experimental-webgl"];
+  var context = null;
+  for (var i=0; i < names.length; i++) {
+    try {
+      context = canvas.getContext(names[i]);
+    } catch(e) {}
+    if (context) {
+      break;
+    }
+  }
+  if (context) {
+    context.viewportWidth = canvas.width;
+    context.viewportHeight = canvas.height;
+  } else {
+    alert("Failed to create WebGL context!");
+  }
+  return context;
+}
+
+function loadShader(type, shaderSource) {
+  var shader = gl.createShader(type);
+  gl.shaderSource(shader, shaderSource);
+  gl.compileShader(shader);
+  
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      alert("Error compiling shader" + gl.getShaderInfoLog(shader));
+      gl.deleteShader(shader);   
+      return null;
+  }
+  return shader;  
+}
+
+function setupShaders() {
+  // 버텍스, 프레그먼트 셰이더 생성
+  var vertexShaderSource = 
+    "attribute vec3 aVertexPosition;                 \n" + // 삼각형을 그리는데 필요한 버텍스 좌표정보
+    "void main() {                                   \n" +
+    "  gl_Position = vec4(aVertexPosition, 1.0);     \n" + // vec4 동차 좌표계 3차원 + 1차원 (1.0)
+    "}                                               \n";           
+   
+   var fragmentShaderSource = 
+     "precision mediump float;                    \n"+
+     "void main() {                               \n"+
+     "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);  \n"+
+     "}                                           \n";
+
+  // gl : webGL context
+  // 셰이더 객체 생성
+  var vertexShader = loadShader(gl.VERTEX_SHADER, vertexShaderSource);
+  var fragmentShader = loadShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+  // 프로그램 객체 생성
+  shaderProgram = gl.createProgram();
+
+  // 프로그램 객체에 각각의 셰이더를 붙인다
+  gl.attachShader(shaderProgram, vertexShader);
+  gl.attachShader(shaderProgram, fragmentShader);
+
+  // 프로그램 객체를 링크한다.
+  gl.linkProgram(shaderProgram);
+
+  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+    alert("Failed to setup shaders");
+  }
+
+  // 웹지엘로 하여금 렌더링에 프로그램 객체를 사용한다
+  gl.useProgram(shaderProgram);
+  
+  shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition"); 
+}
+
+function setupBuffers() {
+  // 웹지엘 버퍼를 만들고 도형 정보를 담고 있는 버텍스 데이터를 버퍼에 로드한다
+  vertexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  var cubeVertices = [
+         -2.0,  2.0,  2.0,  //1
+          -2.0, -2.0, 2.0,  //2
+          2.0,  -2.0, 2.0,  //3
+
+
+  ];
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleVertices), gl.STATIC_DRAW);
+  vertexBuffer.itemSize = 3;
+  vertexBuffer.numberOfItems = 3;
+}
+
+function draw() { 
+  gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  
+  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 
+                         vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+ 
+  gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+  
+  gl.drawArrays(gl.TRIANGLES, 0, vertexBuffer.numberOfItems);
+}
+
+function startup() {
+  canvas = document.getElementById("myGLCanvas");
+  gl = createGLContext(canvas); // Canvas 콘텍스트 생성
+  setupShaders(); //
+  setupBuffers();
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  draw();  
+}
+</script>
+
+</head>
+
+<body onload="startup();">
+  <canvas id="myGLCanvas" width="500" height="500"></canvas>
+</body>
+
+</html>
